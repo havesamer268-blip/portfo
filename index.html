@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZenSpace - مساحة التركيز الاحترافية</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Noto+Sans+Arabic:wght@300;500;700&display=swap');
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Arabic', sans-serif;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const {
+      Timer, Plus, Trash2, CheckCircle2,
+      Circle, Wind, Coffee, Music, Layout
+    } = lucide;
+
+    const App = () => {
+      const [tasks, setTasks] = useState([
+        { id: 1, text: "استكشاف واجهة التطبيق الجديدة", completed: false },
+        { id: 2, text: "بدء جلسة تركيز لمدة 25 دقيقة", completed: true }
+      ]);
+      const [inputValue, setInputValue] = useState('');
+      const [timeLeft, setTimeLeft] = useState(25 * 60);
+      const [isActive, setIsActive] = useState(false);
+      const [activeMood, setActiveMood] = useState('focus');
+
+      useEffect(() => {
+        let interval = null;
+        if (isActive && timeLeft > 0) {
+          interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
+        } else if (timeLeft === 0) {
+          setIsActive(false);
+          clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+      }, [isActive, timeLeft]);
+
+      const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      };
+
+      const addTask = (e) => {
+        e.preventDefault();
+        if (!inputValue.trim()) return;
+        setTasks([{ id: Date.now(), text: inputValue, completed: false }, ...tasks]);
+        setInputValue('');
+      };
+
+      const moodStyles = {
+        focus: "from-indigo-900 via-slate-900 to-black",
+        relax: "from-teal-900 via-emerald-950 to-black",
+        energy: "from-rose-900 via-orange-950 to-black"
+      };
+
+      return (
+        <div className={`min-h-screen transition-all duration-1000 bg-gradient-to-br ${moodStyles[activeMood]} text-white p-6 flex flex-col items-center`}>
+          {/* Header */}
+          <div className="w-full max-w-4xl flex justify-between items-center mb-10">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/10 backdrop-blur-lg rounded-xl border border-white/20">
+                <i data-lucide="layout" className="text-indigo-400"></i>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tighter">ZEN<span className="font-light text-indigo-300">SPACE</span></h1>
+            </div>
+            <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-xs font-medium text-indigo-300">
+              V1.0 Professional
+            </div>
+          </div>
+
+          <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* Timer Section */}
+            <div className="flex flex-col gap-6">
+              <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 flex flex-col items-center relative overflow-hidden shadow-2xl">
+                <div className="absolute top-0 left-0 w-full h-1 bg-white/10">
+                  <div className="h-full bg-indigo-500 transition-all duration-1000" style={{ width: `${(timeLeft / (25 * 60)) * 100}%` }} />
+                </div>
+                <span className="text-indigo-400 text-sm font-bold tracking-[0.2em] mb-4 uppercase">Focus Timer</span>
+                <div className="text-8xl font-thin tracking-tighter mb-8 tabular-nums">
+                  {formatTime(timeLeft)}
+                </div>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setIsActive(!isActive)}
+                    className={`px-10 py-4 rounded-2xl font-bold text-sm transition-all shadow-lg ${isActive ? 'bg-white/10 text-white' : 'bg-white text-black hover:scale-105'
+                      }`}
+                  >
+                    {isActive ? 'إيقاف مؤقت' : 'ابدأ التركيز'}
+                  </button>
+                  <button
+                    onClick={() => { setIsActive(false); setTimeLeft(25 * 60); }}
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  >
+                    <i data-lucide="timer"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6">
+                <h3 className="text-xs font-bold text-gray-500 mb-4 px-2 tracking-widest uppercase">الوضع الحالي</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { id: 'focus', icon: 'wind', label: 'تركيز' },
+                    { id: 'relax', icon: 'coffee', label: 'استرخاء' },
+                    { id: 'energy', icon: 'music', label: 'طاقة' }
+                  ].map(mood => (
+                    <button
+                      key={mood.id}
+                      onClick={() => setActiveMood(mood.id)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all border ${activeMood === mood.id ? 'bg-indigo-500/20 border-indigo-500 shadow-lg shadow-indigo-500/10' : 'bg-white/5 border-transparent hover:bg-white/10'
+                        }`}
+                    >
+                      <i data-lucide={mood.icon} size="20"></i>
+                      <span className="text-xs font-medium">{mood.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Tasks Section */}
+            <div className="flex flex-col h-full">
+              <form onSubmit={addTask} className="relative mb-6">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="اكتب مهمتك الاحترافية التالية..."
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 pr-16 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 backdrop-blur-md transition-all text-right text-lg"
+                />
+                <button type="submit" className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-500 text-white rounded-xl hover:bg-indigo-400 transition-all shadow-lg">
+                  <i data-lucide="plus"></i>
+                </button>
+              </form>
+
+              <div className="space-y-3 overflow-y-auto max-h-[500px] custom-scrollbar">
+                {tasks.map(task => (
+                  <div
+                    key={task.id}
+                    className={`group flex items-center justify-between p-5 rounded-2xl border transition-all duration-500 ${task.completed ? 'bg-white/2 border-white/5 opacity-40' : 'bg-white/5 border-white/10 hover:bg-white/10'
+                      }`}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <button
+                        onClick={() => setTasks(tasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t))}
+                        className={`transition-all transform hover:scale-110 ${task.completed ? 'text-indigo-400' : 'text-gray-500'}`}
+                      >
+                        {task.completed ? <i data-lucide="check-circle-2"></i> : <i data-lucide="circle"></i>}
+                      </button>
+                      <span className={`text-lg font-medium ${task.completed ? 'line-through' : ''}`}>
+                        {task.text}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setTasks(tasks.filter(t => t.id !== task.id))}
+                      className="opacity-0 group-hover:opacity-100 p-2 text-gray-500 hover:text-rose-500 transition-all"
+                    >
+                      <i data-lucide="trash-2" size="20"></i>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Render and refresh icons
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+    // Initial icon render and update on DOM changes
+    setInterval(() => lucide.createIcons(), 500);
+  </script>
+</body>
+
+</html>

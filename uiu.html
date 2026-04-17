@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <title>QR / Barcode Scanner</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: #111;
+            color: white;
+        }
+
+        video {
+            width: 90%;
+            max-width: 400px;
+            border: 3px solid #00ff99;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #00ff99;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>📷 امسح الكود</h2>
+
+    <video id="video"></video>
+    <div id="status">جاري تشغيل الكاميرا...</div>
+
+    <script type="module">
+        import { BrowserMultiFormatReader }
+            from "https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm";
+
+        const codeReader = new BrowserMultiFormatReader();
+        const videoElement = document.getElementById('video');
+        const status = document.getElementById('status');
+
+        let scanned = false;
+
+        // تشغيل الكاميرا والمسح
+        codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
+            if (result && !scanned) {
+                scanned = true;
+
+                const code = result.getText();
+                status.innerText = "تم قراءة الكود: " + code;
+
+                // 🔥 تأخير 1 ثانية قبل الفتح أو البحث
+                setTimeout(() => {
+                    status.innerText = "جاري التحقق من الكود...";
+
+                    // مثال: إذا الكود رابط
+                    if (code.startsWith("http")) {
+                        window.location.href = code;
+                    } else {
+                        // إذا مو رابط نسوي بحث Google
+                        window.location.href =
+                            "https://www.google.com/search?q=" + encodeURIComponent(code);
+                    }
+
+                }, 1000);
+            }
+
+            if (err && !err.name.includes("NotFoundException")) {
+                console.error(err);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
